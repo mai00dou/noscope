@@ -162,8 +162,8 @@ pip install sk-video
 
 
 ## Update
-25/08/2017 - We updated the GPU which it support AVX2. However we do not have enough memory to get it working. From my observation it stopped when it tries to build a YOLO weight file. The requirement of this program is inreasonable (it requires 300GB RAM). We decide not to upgrade the memory.
+**25/08/2017** - We updated the GPU which it support AVX2. However we do not have enough memory to get it working. From my observation it stops when it tries to build a YOLO weight file. The requirement of this program is inreasonable (it requires 300GB RAM). We decide not to upgrade the memory.
 
-
+**23/08/2017** - We successfully built the CNN and it returns Memory Error when we try to run the example. We trim down the video to 1000 frames and the Memory Error is gone. However in a certain process it requires AVX2 which our machine doesn't have it. We decide to upgrade the machine and give it a shot.
 
 
