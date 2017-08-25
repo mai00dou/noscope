@@ -19,13 +19,14 @@ def pairwise(iterable):
 def nth_elem(list, n):
     return np.array([list[i] for i in xrange(0, len(list), n)])
 
-def get_labels(csv_fname, limit=None, interval=1, start=0):
-    # Save the header
-    df = pd.read_csv(csv_fname, skiprows=range(1, start + 1), nrows=limit)
-    labels = map(ast.literal_eval, df['labels'])
-    if interval > 1:
-        labels = nth_elem(labels, interval)
-    return labels
+def get_labels(csv_fname, limit=None, interval=1, start=0, labels=['person', 'bus', 'car']):
+    df = pd.read_csv(csv_fname)
+    df = df[df['frame'] >= start]
+    df = df[df['frame'] < start + limit]
+    df['frame'] -= start
+    df = df[df['object_name'].isin(labels)]
+    groups = df.set_index('frame')
+    return groups
 
 def get_raw_counts(csv_fname, OBJECTS=['person'], limit=None, interval=1, start=0):
     labels = get_labels(csv_fname, interval=interval, limit=limit, start=start)
@@ -54,17 +55,16 @@ def get_differences(csv_fname, OBJECT, limit=None, interval=1, delay=1):
     labels = get_labels(csv_fname, limit=limit, interval=interval, start=delay)
     return np.array([1 if sym_diff(labels[i], labels[i-delay]) else 0 for i in xrange(delay, limit, interval)])
 
-# FIXME: efficiency
-def get_binary(csv_fname, OBJECTS=['person'], limit=None, interval=1, start=0, WINDOW=30):
-    counts = get_counts(csv_fname,
-                        OBJECTS=OBJECTS,
-                        limit=limit,
-                        interval=interval,
-                        start=start) > 0.1 # NOTE: BEWARE USER
-    counts = np.where(counts == 0, 0, 1)
+def get_binary(csv_fname, OBJECTS=['person'], limit=None, start=0, WINDOW=30):
+    df = pd.read_csv(csv_fname)
+    df = df[df['object_name'].isin(OBJECTS)]
+    groups = df.set_index('frame')
+    counts = map(lambda i: i in groups.index, range(start, limit + start))
+    counts = np.array(counts)
+
     smoothed_counts = np.convolve(np.ones(WINDOW), np.ravel(counts), mode='same') > WINDOW * 0.7
+    print (np.sum(smoothed_counts != counts), np.sum(smoothed_counts))
     smoothed_counts = smoothed_counts.reshape(len(counts), 1)
-    print np.sum(smoothed_counts != counts)
     counts = smoothed_counts
     return counts
 
@@ -139,39 +139,39 @@ def get_data(csv_fname, video_fname, binary=False, num_frames=None,
     def print_class_numbers(Y, nb_classes):
         classes = np_utils.probas_to_classes(Y)
         for i in xrange(nb_classes):
-            print 'class %d: %d' % (i, np.sum(classes == i))
+            print ('class %d: %d' % (i, np.sum(classes == i)))
 
-    print '\tParsing %s, extracting %s' % (csv_fname, str(OBJECTS))
+    print ('\tParsing %s, extracting %s' % (csv_fname, str(OBJECTS)))
     if binary:
         all_counts = get_binary(csv_fname, limit=num_frames, OBJECTS=OBJECTS)
     else:
         all_counts = get_counts(csv_fname, limit=num_frames, OBJECTS=OBJECTS)
-    print '\tRetrieving all frames from %s' % video_fname
+    print ('\tRetrieving all frames from %s' % video_fname)
     all_frames = VideoUtils.get_all_frames(
             len(all_counts), video_fname, scale=resol, dtype=dtype)
-    print '\tSplitting data into training and test sets'
+    print ('\tSplitting data into training and test sets')
     X_train, X_test, Y_train, Y_test = to_test_train(
             all_frames, all_counts, regression=regression,
             center=center, dtype=dtype, train_ratio=train_ratio)
     if regression:
         nb_classes = 1
-        print '(train) mean, std: %f, %f' % \
-            (np.mean(Y_train), np.std(Y_train))
-        print '(test) mean, std: %f %f' % \
-            (np.mean(Y_test), np.std(Y_test))
+        print ('(train) mean, std: %f, %f' % \
+            (np.mean(Y_train), np.std(Y_train)))
+        print ('(test) mean, std: %f %f' % \
+            (np.mean(Y_test), np.std(Y_test)))
     else:
         nb_classes = all_counts.max() + 1
-        print '(train) positive examples: %d, total examples: %d' % \
+        print ('(train) positive examples: %d, total examples: %d' % \
             (np.count_nonzero(np_utils.probas_to_classes(Y_train)),
-             len(Y_train))
+             len(Y_train)))
         print_class_numbers(Y_train, nb_classes)
-        print '(test) positive examples: %d, total examples: %d' % \
+        print ('(test) positive examples: %d, total examples: %d' % \
             (np.count_nonzero(np_utils.probas_to_classes(Y_test)),
-             len(Y_test))
+             len(Y_test)))
         print_class_numbers(Y_test, nb_classes)
 
-    print 'shape of image: ' + str(all_frames[0].shape)
-    print 'number of classes: %d' % (nb_classes)
+    print ('shape of image: ' + str(all_frames[0].shape))
+    print ('number of classes: %d' % (nb_classes))
 
     data = (X_train, Y_train, X_test, Y_test)
     return data, nb_classes

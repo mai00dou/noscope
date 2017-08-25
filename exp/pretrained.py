@@ -47,12 +47,12 @@ def train_top_model(data, nb_epoch=50, regression=False):
     if not regression:
         model.add(Activation('softmax'))
 
-    print X_train.shape
-    print Y_train.shape
-    print Y_train[0]
+    print (X_train.shape)
+    print (Y_train.shape)
+    print (Y_train[0])
 
     loss = noscope.Models.get_loss(regression)
-    print loss
+    print (loss)
     optimizer = optimizers.RMSprop()
     model.compile(optimizer=optimizer, loss=loss,
                   metrics=noscope.Models.computed_metrics)
@@ -62,9 +62,9 @@ def train_top_model(data, nb_epoch=50, regression=False):
               validation_data=(X_test, Y_test))'''
     noscope.Models.run_model(model, data, nb_epoch=nb_epoch, patience=10)
     if regression:
-        print noscope.Models.evaluate_model_regression(model, X_test, Y_test)
+        print (noscope.Models.evaluate_model_regression(model, X_test, Y_test))
     else:
-        print noscope.Models.evaluate_model_multiclass(model, X_test, Y_test)
+        print (noscope.Models.evaluate_model_multiclass(model, X_test, Y_test))
     # model.save_weights(top_model_weights_path)
     return model
 
@@ -80,9 +80,9 @@ def fine_tune(model, data, nb_epoch=5, regression=False):
 
     noscope.Models.run_model(model, data, nb_epoch=nb_epoch, patience=3)
     if regression:
-        print noscope.Models.evaluate_model_regression(model, X_test, Y_test)
+        print (noscope.Models.evaluate_model_regression(model, X_test, Y_test))
     else:
-        print noscope.Models.evaluate_model_multiclass(model, X_test, Y_test)
+        print (noscope.Models.evaluate_model_multiclass(model, X_test, Y_test))
 
     return model
 
@@ -109,7 +109,7 @@ def main():
     def check_args(args):
         if args.regression:
             if args.binary:
-                print 'WARNING: Setting args.binary to False'
+                print ('WARNING: Setting args.binary to False')
                 args.binary = False
         else:
             # Check here?

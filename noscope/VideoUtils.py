@@ -18,6 +18,7 @@ def VideoIterator(video_fname, scale=None, interval=1, start=0):
             scale = None
         except:
             resol = None
+    print (" Iterate Frame |")
     while frame is not None:
         frame_ind += 1
         _, frame = cap.read()
@@ -26,7 +27,9 @@ def VideoIterator(video_fname, scale=None, interval=1, start=0):
         if scale is not None:
             frame = cv2.resize(frame, None, fx=scale, fy=scale, interpolation=cv2.INTER_NEAREST)
         elif resol is not None:
+            print (" * Get Frame |")
             frame = cv2.resize(frame, resol, interpolation=cv2.INTER_NEAREST)
+            print ("| data: ",frame_ind,frame)
         yield frame_ind, frame
 
 def VideoHistIterator(video_fname, scale=None, start=0):
@@ -39,8 +42,17 @@ def VideoHistIterator(video_fname, scale=None, start=0):
         yield frame_ind, frame, hist
 
 def get_all_frames(num_frames, video_fname, scale=None, interval=1, start=0, dtype='float32'):
+    if video_fname[-4:] == '.bin':
+        RESOL = (50, 50) # FIXME
+        FRAME_SIZE = RESOL[0] * RESOL[0] * 3
+        f = open(video_fname, 'rb')
+        f.seek(start * FRAME_SIZE)
+        frames = np.fromfile(f, dtype='uint8', count=num_frames * FRAME_SIZE)
+        frames = frames.reshape((num_frames, RESOL[0], RESOL[1], 3))
+        return frames.astype('float32') / 255.
+
     true_num_frames = int(ceil((num_frames + 0.0) / interval))
-    print '%d total frames / %d frame interval = %d actual frames' % (num_frames, interval, true_num_frames)
+    print ('%d total frames / %d frame interval = %d actual frames' % (num_frames, interval, true_num_frames))
     vid_it = VideoIterator(video_fname, scale=scale, interval=interval, start=start)
 
     _, frame = vid_it.next()

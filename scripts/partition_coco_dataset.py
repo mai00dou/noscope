@@ -13,7 +13,7 @@ DATA_ROOT_DIR = '/dfs/scratch1/ddkang/noscope-datasets/ms-coco'
 #RESOLS = [50, 100]
 
 def make_h5_file(fname_base, pos_images, neg_images, resol, data_dir):
-    print fname_base
+    print (fname_base)
     image_arr = np.zeros( tuple([len(pos_images) + len(neg_images), resol,
         resol, 3]), dtype='float32')
     labels = np.concatenate([np.ones(len(pos_images)), np.zeros(len(neg_images))])
@@ -64,5 +64,5 @@ if __name__ == '__main__':
 
     #pool = multiprocessing.Pool(min(len(objects)*len(RESOLS), 18))
     #results = pool.map(make_h5_file, fn_args)
-    print 'Done!'
+    print ('Done!')
 

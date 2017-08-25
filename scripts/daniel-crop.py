@@ -21,11 +21,11 @@ def fn(args):
         ' -filter:v "crop=' + crop_args + '" ' + \
         vid_out_fname
 
-    print 'Running ' + str(cmd)
+    print ('Running ' + str(cmd))
     process = subprocess.Popen(cmd, universal_newlines=True, shell=True)
     process.wait()
     if process.returncode == 1:
-        print 'Something failed'
+        print ('Something failed')
 
 
 def main():
@@ -45,7 +45,7 @@ def main():
 
     pool = multiprocessing.Pool(20)
     results = pool.map(fn, run_args)
-    print results
+    print (results)
 
 
 if __name__ == '__main__':

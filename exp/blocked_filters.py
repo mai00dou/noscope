@@ -36,7 +36,7 @@ def get_filter(filter_name, frame_shape, num_blocks):
         return BlockedRawImage(frame_shape, num_blocks)
     else:
         import sys
-        print 'Invalid model type: %s' % filter_name
+        print ('Invalid model type: %s' % filter_name)
         sys.exit(1)
 
 def train_model(model_name, X_train, Y_train, reg='l2'):
@@ -51,7 +51,7 @@ def train_model(model_name, X_train, Y_train, reg='l2'):
     #    model = svm.fit(X_train, Y_train)
     else:
         import sys
-        print 'Invalid model type: %s' % model_name
+        print ('Invalid model type: %s' % model_name)
         sys.exit(1)
     return model
 
@@ -89,7 +89,7 @@ def get_confidences(filter, model_name, reg, DELAY, ref_index, metric, X_train_f
         model = train_model(model_name, X_train_distances, Y_train_distances,
                 reg=reg)
         with open(fname_template + '.model', 'w') as f:
-            print >> f, ' '.join(str(val) for val in model.coef_[0])
+            print (>> f, ' '.join(str(val) for val in model.coef_[0]))
         probs = model.predict_proba(X_distances)
         if ref_index == -1:
             return np.concatenate([np.zeros(DELAY), probs[:, 1]])
@@ -129,7 +129,7 @@ def main():
     # we're only focusing on the binary task
     assert len(objects) == 1
 
-    print 'Preparing data....'
+    print ('Preparing data....')
     data, nb_classes = noscope.DataUtils.get_data(
             args.csv_in, args.video_in,
             binary=True,
@@ -146,16 +146,16 @@ def main():
 
     mkdir_p(args.output_dir)
     base_fname = os.path.join(args.output_dir, args.base_name)
-    print 'Computing features....'
+    print ('Computing features....')
     for filter_name in filters:
-        print filter_name
+        print (filter_name)
         filter = get_filter(filter_name, X_train[0].shape, args.num_blocks)
 
         begin = time.time()
         X_train_feats = np.array([filter.compute_feature(X) for X in X_train])
         X_test_feats = np.array([filter.compute_feature(X) for X in X_test])
         end = time.time()
-        print end - begin
+        print (end - begin)
 
         for metric_name, metric in filter.distance_metrics():
             if args.metric is not None and metric_name != args.metric: continue
@@ -163,8 +163,8 @@ def main():
             if args.ref_index != -1:
                 ref_index = find_ref_index(Y_train)
                 if ref_index < args.ref_index - 60 or args.ref_index + 60 < ref_index:
-                    print 'WARNING',
-                print '--ref_index was %d, found %d' % (args.ref_index, ref_index)
+                    print ('WARNING',)
+                print ('--ref_index was %d, found %d' % (args.ref_index, ref_index))
             else:
                 ref_index = -1
 
@@ -172,13 +172,13 @@ def main():
                     filter_name, metric_name, args.model, args.reg, DELAY,
                     args.resol, ref_index, args.num_blocks)
             csv_fname = fname_template + '.csv'
-            print csv_fname
+            print (csv_fname)
             begin = time.time()
             confidences = get_confidences(filter, args.model,
                     args.reg, DELAY, ref_index, metric, X_train_feats,
                     X_test_feats, Y, fname_template)
             end = time.time()
-            print end-begin
+            print (end-begin)
             noscope.DataUtils.confidences_to_csv(csv_fname, confidences, objects[0])
 
 if __name__ == '__main__':

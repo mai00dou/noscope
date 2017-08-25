@@ -9,7 +9,7 @@ from pathos import multiprocessing
 def fn(arg):
     i, OBJECT, dir_name, truth_csv_name, test_csv_name, output_csv, runner = arg
     if not os.path.isfile(truth_csv_name):
-        print 'Can\'t find %s' % (truth_csv_name)
+        print ('Can\'t find %s' % (truth_csv_name))
 
     cmd = ['python', runner,
            OBJECT,

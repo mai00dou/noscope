@@ -31,7 +31,7 @@ def main():
     def check_args(args):
         if args.regression:
             if args.binary:
-                print 'WARNING: Setting args.binary to False'
+                print ('WARNING: Setting args.binary to False')
                 args.binary = False
         else:
             # Check here?
@@ -44,7 +44,7 @@ def main():
     # we're only focusing on the binary task
     assert len(objects) == 1
 
-    print 'Preparing data....'
+    print ('Preparing data....')
     data, nb_classes = noscope.DataUtils.get_data(
             args.csv_in, args.video_in,
             binary=args.binary,
@@ -86,10 +86,10 @@ def main():
 
     hyperband = HyperBand(100)
     learners = hyperband.run(get_random_learner)
-    print len(learners)
+    print (len(learners))
     for learner in learners:
-        print learner.fname
-        print learner.test_eval()
+        print (learner.fname)
+        print (learner.test_eval())
         learner.save_model()
 
 

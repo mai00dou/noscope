@@ -38,7 +38,7 @@ def main():
     # we're only focusing on the binary task
     assert len(objects) == 1
 
-    print 'Preparing data....'
+    print ('Preparing data....')
     data, nb_classes = noscope.DataUtils.get_data(
             args.csv_in, args.video_in,
             binary=True,
@@ -52,9 +52,9 @@ def main():
     X_all = np.concatenate([X_train, X_test])
 
     base_fname = os.path.join(args.output_dir, args.base_name)
-    print 'Computing features....'
+    print ('Computing features....')
     for feature_name, feature_fn, metrics in [('sift', SIFT.compute_feature, SIFT.DIST_METRICS)]:
-        print feature_name
+        print (feature_name)
         X_all_features = np.array([feature_fn(X) for X in X_all])
         for avg in ['no-avg', 'avg']:
             if avg == 'avg':
@@ -62,12 +62,12 @@ def main():
             for name, metric_fn in metrics:
                 csv_fname = '%s_%s_delay%d_resol%d.csv' % (base_fname, feature_name + '-' +
                         avg + '-' + name, DELAY, args.resol)
-                print csv_fname
+                print (csv_fname)
 
                 begin = time.time()
                 confidences = get_confidences(X_all_features, DELAY, metric_fn)
                 end = time.time()
-                print end - begin
+                print (end - begin)
                 noscope.DataUtils.confidences_to_csv(csv_fname, confidences, objects[0])
 
 

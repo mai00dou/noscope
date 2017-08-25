@@ -20,17 +20,17 @@ def move_files(input_dir, output_dir):
             continue
         prev = filename_no_num
         filename_with_ext = filename + '.mp4'
-        print 'copying %s...' % filename_with_ext
+        print ('copying %s...' % filename_with_ext)
         exit_code = check_call('cp %s %s' % ('%s/%s' % (input_dir, filename_with_ext),
             '%s/%s' % (output_dir, filename_with_ext)), shell=True)
         if exit_code != 0:
-            print 'error copying over %s; do not remove' % filename_with_ext
+            print ('error copying over %s; do not remove' % filename_with_ext)
             continue
         else:
-            print 'removing %s from %s' % (filename_with_ext, input_dir)
+            print ('removing %s from %s' % (filename_with_ext, input_dir))
             exit_code = check_call('rm %s' % ('%s/%s' % (input_dir, filename_with_ext)), shell=True)
         if exit_code != 0:
-            print 'error removing %s' % filename_with_ext
+            print ('error removing %s' % filename_with_ext)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -41,10 +41,10 @@ def main():
     args = parser.parse_args()
 
     if args.input_dir[0] != '/':
-        print '--input_dir argument must be an absolute path'
+        print ('--input_dir argument must be an absolute path')
         import sys; sys.exit(1)
     elif args.output_dir[0] != '/':
-        print '--output_dir argument must be an absolute path'
+        print ('--output_dir argument must be an absolute path')
         import sys; sys.exit(1)
 
     move_files(args.input_dir, args.output_dir)

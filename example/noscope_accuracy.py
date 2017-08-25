@@ -7,11 +7,10 @@ import json
 import sys
 import os
 import timeit
+import csv
+from collections import namedtuple
 
 DIRNAME = os.path.dirname(os.path.realpath(__file__))
-
-TEST_START_IDX = 250000
-TEST_END_IDX   = 550000 # inclusive
 
 YOLO_CONFIDENCE = 0.20
 SKIP_FRAME_STATUS = 0
@@ -25,51 +24,28 @@ def strip_comment_lines(lines):
     return lines
 
 def parse_yolo_csv(f, label, start, end):
-    file_lines = strip_comment_lines( f.read().strip().split('\n') )
+    # Pandas crashes with multiprocessing so use the CSV
+    f.readline() # Skip the header
+    reader = csv.reader(f)
+    rows = []
+    for row in reader:
+        # frame,object_name,confidence,xmin,ymin,xmax,ymax
+        rows.append( (int(row[0]), row[1]) )
+
+    rows = filter(lambda row: row[0] >= start and row[0] < end, rows)
+    rows = filter(lambda row: row[1] == label, rows)
+    frames = set(map(lambda row: row[0], rows))
+
+    nt = namedtuple('YoloObj', ['frame', 'object', 'confidence'])
+    frame_objs = []
+    for i in xrange(start, end):
+        if i in frames:
+            frame_objs.append(nt(i, label, 1))
+        else:
+            frame_objs.append(nt(i, label, 0))
+    return frame_objs
     
-    if( start != 0 or end != len(file_lines) ):
-        sys.stdout.write('WARNING: computing accuracy with respect to ground truth frames {} to {}\n'.format(start, end))
-
-    file_lines = file_lines[start:end]
-
-    # get objects
-    default_object = {'confidence':0.0, 'object_name':label}
-    frame_objects_str = None
-
-    frame_objects_str = []
-    for line in file_lines:
-        try:
-            frame_objects_str.append( (int(line.split(',')[0]), line.split('"')[1]) ) 
-        except:
-            print line 
-            raise line
-
-    frame_objects = map(lambda x: (x[0], eval(x[1])), frame_objects_str )
-
-    frame_objects_final = []
-    for frame_num, objs in frame_objects:
-        best_confidence = 0.0
-        best_obj = dict.copy(default_object)
-        best_obj['frame_num'] = frame_num
-
-        
-        for obj in objs:
-            try:
-                if (obj['object_name'] == label and obj['confidence'] > best_confidence):
-                    obj['frame_num'] = frame_num
-                    best_obj = obj
-                    best_confidence = obj['confidence']
-                    
-            except:
-                print obj
-                raise obj
-
-        frame_objects_final.append(best_obj)
-    
-    # print '\n'.join(map(str, frame_objects_final[1600:1630]))
-    return frame_objects_final
-    
-def parse_noscope_csv(f, label, start=TEST_START_IDX, end=TEST_END_IDX):
+def parse_noscope_csv(f, label, start, end):
     lines = f.read().strip().split('\n')
     metadata = lines[0]
 
@@ -147,7 +123,7 @@ def parse_noscope_csv(f, label, start=TEST_START_IDX, end=TEST_END_IDX):
 
     for key in ['diff_thresh', 'distill_thresh_lower', 'distill_thresh_upper', 'skip', 'skip_cnn', 'runtime']:
         if key not in stats.keys():
-            print 'missing the following header:', key
+            print ('missing the following header:', key)
             sys.exit(-1)
 
     stats['max_diff_confidence'] = max_diff_confidence
@@ -172,7 +148,7 @@ def smooth_indicator(indicator):
     return np.asarray( indicator_smooth )
 
 def window_yolo(frames):
-    true_indicator = np.asarray( map(lambda x: int(x['confidence'] > YOLO_CONFIDENCE), frames) )
+    true_indicator = np.asarray( map(lambda x: int(x.confidence > YOLO_CONFIDENCE), frames) )
     
     # smooth and window the yolo labels
     return smooth_indicator(true_indicator)
@@ -224,17 +200,21 @@ def accuracy(yolo_indicator, noscope_indicator):
     false_positives = difference_indicator == 1
     false_negatives = difference_indicator == -1
 
-    error_rate = np.sum( np.abs(difference_indicator) ) / len(difference_indicator)
-    false_positive_rate = np.sum(false_positives) / (len(yolo_indicator) - np.sum(yolo_indicator))
-    false_negative_rate = np.sum(false_negatives) / np.sum(yolo_indicator)
+    yolo_sum = np.sum(yolo_indicator)
+    nb_fp = np.sum(false_positives)
+    nb_fn = np.sum(false_negatives)
+
+    error_rate = (nb_fp + nb_fp) / len(difference_indicator)
+    false_positive_rate = nb_fp / (len(yolo_indicator) - yolo_sum)
+    false_negative_rate = nb_fn / yolo_sum
     
     # report the results
     results = dict()
     results['accuracy'] = 1 - error_rate
     results['false_positive'] = false_positive_rate
     results['false_negative'] = false_negative_rate
-    results['num_true_positives'] = np.sum(yolo_indicator)
-    results['num_true_negatives'] = len(yolo_indicator) - np.sum(yolo_indicator)
+    results['num_true_positives'] = yolo_sum
+    results['num_true_negatives'] = len(yolo_indicator) - yolo_sum
     results['num_windows'] = len(yolo_indicator)
     results['window_size'] = WINDOW_SIZE
     results['window_thres'] = WINDOW_THRES
@@ -247,7 +227,9 @@ def accuracy2str(results):
 ################################################################################
 # begin the script
 ################################################################################
-def main(object_name, yolo_csv_filename, noscope_csv_filename):
+def main(object_name,
+         TEST_START_IDX, TEST_END_IDX,
+         yolo_csv_filename, noscope_csv_filename):
 
     with open(yolo_csv_filename, 'r') as yolo:
         with open(noscope_csv_filename, 'r') as noscope:
@@ -259,16 +241,16 @@ def main(object_name, yolo_csv_filename, noscope_csv_filename):
     assert(len(yolo_frames) == TEST_END_IDX-TEST_START_IDX)
 
     # window yolo labels
-    print len(yolo_frames)
+    print (len(yolo_frames))
     yolo_indicator = window_yolo(yolo_frames) 
-    print len(yolo_indicator)
+    print (len(yolo_indicator))
 
     # window the noscope labels
     DIFF_THRES = noscope_stats['diff_thresh']
     CNN_LOWER_THRES = noscope_stats['distill_thresh_lower']
     CNN_UPPER_THRES = noscope_stats['distill_thresh_upper']
     if noscope_stats['skip_cnn']:
-        print 'Note: cnn was skipped?'
+        print ('Note: cnn was skipped?')
         # print DIFF_THRES, CNN_LOWER_THRES, CNN_UPPER_THRES
 
     noscope_indicator = _OLD_window_noscope(noscope_frames, noscope_stats, yolo_indicator, DIFF_THRES, CNN_LOWER_THRES, CNN_UPPER_THRES)
@@ -289,4 +271,4 @@ if __name__ == "__main__":
     yolo_csv_filename = sys.argv[2]
     noscope_csv_filename = sys.argv[3]
     
-    print accuracy2str( main(object_name, yolo_csv_filename, noscope_csv_filename) )
+    print (accuracy2str( main(object_name, yolo_csv_filename, noscope_csv_filename) ))

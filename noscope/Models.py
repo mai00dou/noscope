@@ -11,12 +11,13 @@ from keras.callbacks import EarlyStopping, ModelCheckpoint
 from keras.models import Sequential
 from keras.layers import Dense, Dropout, Activation, Flatten
 from keras.layers import Convolution2D, MaxPooling2D
-from keras.utils import np_utils
+import np_utils
 
 computed_metrics = ['accuracy', 'mean_squared_error']
 
 # In case we want more callbacks
-def get_callbacks(model_fname, patience=1):
+def get_callbacks(model_fname, patience=2):
+    return [ModelCheckpoint(model_fname)]
     return [EarlyStopping(monitor='loss',     patience=patience, min_delta=0.00001),
             EarlyStopping(monitor='val_loss', patience=patience + 2, min_delta=0.0001),
             ModelCheckpoint(model_fname, save_best_only=True)]
@@ -28,16 +29,10 @@ def get_loss(regression):
         return 'categorical_crossentropy'
 
 def get_optimizer(regression, nb_layers, lr_mult=1):
-    '''if regression:
+    if regression:
         return keras.optimizers.RMSprop(lr=0.001 / (1.5 * nb_layers) * lr_mult)
     else:
-        return keras.optimizers.RMSprop(lr=0.001 * lr_mult)# / (5 * nb_layers))'''
-    if regression:
-        return keras.optimizers.SGD(lr=0.01 * lr_mult / 2,
-                                    momentum=0.9, decay=0.00005, nesterov=True)
-    else:
-        return keras.optimizers.SGD(lr=0.01 * lr_mult,
-                                    momentum=0.9, decay=0.00005, nesterov=True)
+        return keras.optimizers.RMSprop(lr=0.001 * lr_mult)# / (5 * nb_layers))
 
 
 def generate_conv_net_base(
@@ -45,7 +40,7 @@ def generate_conv_net_base(
         nb_dense=128, nb_filters=32, nb_layers=1, lr_mult=1,
         kernel_size=(3, 3), stride=(1, 1),
         regression=False):
-    assert nb_layers >= 1
+    assert nb_layers >= 0
     assert nb_layers <= 3
     model = Sequential()
     model.add(Convolution2D(nb_filters, kernel_size[0], kernel_size[1],
@@ -156,13 +151,13 @@ def run_model(model, data, batch_size=32, nb_epoch=1, patience=2,
         validation_split = 0.33333333
         if len(Y_train) * validation_split > 50000.0:
             validation_split = 50000.0 / float(len(Y_train))
-        print validation_split
+        print (validation_split)
 
         begin_train = time.time()
         model.fit(X_train, Y_train,
                   batch_size=batch_size,
                   nb_epoch=nb_epoch,
-                  validation_split=validation_split,
+                  # validation_split=validation_split,
                   # validation_data=(X_test, Y_test),
                   shuffle=True,
                   class_weight='auto',
@@ -241,7 +236,7 @@ def evaluate_model_regression(model, X_test, Y_test, batch_size=256):
         proba = np.concatenate([1 - predictions, predictions], axis=1)
         metrics = stats_from_proba(proba, Y_classes)
         metrics['cutoff'] = cutoff
-        print 'Cutoff: %f, metrics: %s' % (cutoff, str(metrics))
+        print ('Cutoff: %f, metrics: %s' % (cutoff, str(metrics)))
         if metrics['accuracy'] > best['accuracy']:
             best = metrics
 
@@ -347,10 +342,10 @@ def try_params(model_gen, params, data,
         model.save(model_fname)
 
         to_write.append(list(param[2:]) + [train_time] + metrics_to_list(metrics))
-        print param
-        print train_time, metrics
+        print (param)
+        print (train_time, metrics)
         print
-    print to_write
+    print (to_write)
     # First two params don't need to be written out
     param_column_names = map(lambda i: 'param' + str(i), xrange(len(params[0]) - 2))
     column_names = param_column_names + ['train_time'] + metrics_names(metrics)

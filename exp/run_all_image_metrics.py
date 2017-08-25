@@ -9,9 +9,9 @@ from pathos import multiprocessing
 def fn(arg):
     RESOL, DELAY, OBJECT, BASE_NAME, csv_in_name, vid_in_name, output_dir, runner = arg
     if not os.path.isfile(vid_in_name):
-        print 'Can\'t find %s' % (vid_in_name)
+        print ('Can\'t find %s' % (vid_in_name))
     if not os.path.isfile(csv_in_name):
-        print 'Can\'t find %s' % (csv_in_name)
+        print ('Can\'t find %s' % (csv_in_name))
 
     cmd = ['python', runner,
            '--csv_in', csv_in_name,
@@ -22,11 +22,11 @@ def fn(arg):
            '--num_frames', str(250000),
            '--resol', str(RESOL),
            '--delay', str(DELAY)]
-    print 'Running ' + str(cmd)
+    print ('Running ' + str(cmd))
     process = subprocess.Popen(cmd)
     process.wait()
     if process.returncode == 1:
-        print 'Something failed'
+        print ('Something failed')
     return process.returncode
 
 
@@ -98,8 +98,8 @@ def main():
 
     pool = multiprocessing.Pool(5)
     results = pool.map(fn, run_args)
-    print results
-    print len(results)
+    print (results)
+    print (len(results))
 
 
 if __name__ == '__main__':

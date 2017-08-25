@@ -39,7 +39,7 @@ def main():
     # we're only focusing on the binary task
     assert len(objects) == 1
 
-    print 'Preparing data....'
+    print ('Preparing data....')
     data, nb_classes = noscope.DataUtils.get_data(
             args.csv_in, args.video_in,
             binary=True,
@@ -57,12 +57,12 @@ def main():
     base_fname = os.path.join(args.output_dir, args.base_name)
     for name, metric in metrics.iteritems():
         csv_fname = '%s_%s_delay%d_resol%d.csv' % (base_fname, name, DELAY, args.resol)
-        print csv_fname
+        print (csv_fname)
 
         begin = time.time()
         confidences = get_confidences(X_all, DELAY, metric)
         end = time.time()
-        print end - begin
+        print (end - begin)
         noscope.DataUtils.confidences_to_csv(csv_fname, confidences, objects[0])
 
 

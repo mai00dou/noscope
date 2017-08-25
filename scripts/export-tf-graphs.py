@@ -39,7 +39,7 @@ def main():
         sess = tf.Session()
         frozen_graph_path = os.path.splitext(os.path.split(keras_model_fname)[1])[0] + '.pb'
         frozen_graph_path = os.path.join(args.output_dir, frozen_graph_path)
-        print 'Producing: ' + frozen_graph_path
+        print ('Producing: ' + frozen_graph_path)
 
         model = get_keras_model(keras_model_fname, sess)
         img1 = tf.placeholder(tf.float32, shape=(None, 50, 50, 3), name='input_img')

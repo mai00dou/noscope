@@ -60,8 +60,8 @@ def main():
     counts = noscope.DataUtils.get_binary(csv_in_fname, limit=nb_frames)
     it = VidHistLabelIter(vid_in_fname, counts, scale=scale)
     all_data = list(itertools.islice(it, nb_frames))
-    print len(all_data[0])
-    print all_data[0][-1]
+    print (len(all_data[0]))
+    print (all_data[0][-1])
 
     def chisq(a, b):
         ha = noscope.filters.ColorHistogram.compute_histogram(a)
@@ -93,12 +93,12 @@ def main():
                (nrmse_mean, 'nrmse_mean'),
                (chisq_3d, 'chisq_3d')]
 
-    print all_data[0][1].shape
+    print (all_data[0][1].shape)
     Y_true = map(lambda i: label_fn(all_data[i][-1][0], all_data[i - DELAY][-1][0]),
                  xrange(DELAY, len(all_data)))
     Y_true, indices = jointly_filter(Y_true, range(DELAY, len(all_data)))
     for metric, metric_name in metrics:
-        print 'Running ' + metric_name
+        print ('Running ' + metric_name)
         begin = time.time()
         #Y_prob = map(lambda i: noscope.ColorHistogram.compute_chisq(all_data[i][2], all_data[i - DELAY][2]),
         #             xrange(DELAY, len(all_data)))
@@ -107,13 +107,13 @@ def main():
 
         prefix, _ = os.path.splitext(os.path.split(vid_in_fname)[1])
         prefix += '.' + metric_name
-        print noscope.StatsUtils.plot_auc_pr(
+        print (noscope.StatsUtils.plot_auc_pr(
             Y_true, Y_prob,
             roc_fname=prefix + '.auc.png',
             pr_fname=prefix + '.pr.png',
-            fnr_fpr_fname=prefix + '.fnr_fpr.png')
+            fnr_fpr_fname=prefix + '.fnr_fpr.png'))
         end = time.time()
-        print end - begin
+        print (end - begin)
 
 
 if __name__ == '__main__':

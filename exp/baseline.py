@@ -38,7 +38,7 @@ def main():
     parser.add_argument('--image_dir', required=True, help='Directory with positive and negative images')
     args = parser.parse_args()
 
-    print 'Preparing data....'
+    print ('Preparing data....')
     data = get_data(args.object, args.image_dir)
     nb_classes = 2
     X_train, Y_train, X_test, Y_test = data

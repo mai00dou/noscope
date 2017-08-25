@@ -32,7 +32,7 @@ def train_model(model_type, X_train, Y_train, DELAY):
         model = svm.fit(X_delta, Y_delta)
     else:
         import sys
-        print 'Invalid model type: %s' % model_type
+        print ('Invalid model type: %s' % model_type)
         sys.exit(1)
     return model
 
@@ -54,7 +54,7 @@ def main():
     # we're only focusing on the binary task
     assert len(objects) == 1
 
-    print 'Preparing data....'
+    print ('Preparing data....')
     data, nb_classes = noscope.DataUtils.get_data(
             args.csv_in, args.video_in,
             binary=True,
@@ -67,9 +67,9 @@ def main():
     Y_train = Y_train.astype('uint8')
 
     base_fname = os.path.join(args.output_dir, args.base_name)
-    print 'Computing features....'
+    print ('Computing features....')
     for feature_name, feature_fn, metrics in [('hog', HOG.compute_feature, HOG.DIST_METRICS)]:
-        print feature_name
+        print (feature_name)
         X_train_feats = np.array([feature_fn(X) for X in X_train])
         X_test_feats = np.array([feature_fn(X) for X in X_test])
         X_all_feats = np.concatenate([X_train_feats, X_test_feats])
@@ -78,12 +78,12 @@ def main():
             model = train_model(model_type, X_train_feats, Y_train, DELAY)
             csv_fname = '%s_%s_delay%d_resol%d.csv' % (base_fname, feature_name + '-' +
                     model_type, DELAY, args.resol)
-            print csv_fname
+            print (csv_fname)
 
             begin = time.time()
             confidences = get_confidences(model, X_all_feats, DELAY)
             end = time.time()
-            print end - begin
+            print (end - begin)
             noscope.DataUtils.confidences_to_csv(csv_fname, confidences, objects[0])
 
 if __name__ == '__main__':

@@ -18,11 +18,11 @@ def pairwise_hstack_multi(features):
     return np.array([np.hstack((np.hstack(f1), np.hstack(f2))) for f1, f2 in DataUtils.pairwise(features)])
 
 def get_frames(video_fname, num_frames, frame_interval, scale):
-    print 'Retrieving %d frames from %s' % (num_frames, video_fname)
+    print ('Retrieving %d frames from %s' % (num_frames, video_fname))
     return VideoUtils.get_all_frames(num_frames, video_fname, frame_interval, scale=scale)
 
 def get_training_labels(csv_in_fname, object, num_frames, frame_interval):
-    print 'Retrieving %d labels from %s' % (num_frames, csv_in_fname)
+    print ('Retrieving %d labels from %s' % (num_frames, csv_in_fname))
     return DataUtils.get_binary(csv_in_fname, object, frame_interval, limit=num_frames)
 
 def get_features(feature_type, frames):
@@ -38,7 +38,7 @@ def get_features(feature_type, frames):
         return hstack(zip(ch_features, hog_features))
     else:
         import sys
-        print 'Invalid feature type: %s' % feature_type
+        print ('Invalid feature type: %s' % feature_type)
         sys.exit(1)
 
 def evaluate_model(model, X, y_true):
@@ -83,7 +83,7 @@ def get_model(model_type, X_train, Y_train, class_weights):
         model = svm.fit(X_train, Y_train)
     else:
         import sys
-        print 'Invalid model type: %s' % model_type
+        print ('Invalid model type: %s' % model_type)
         sys.exit(1)
     return model
 

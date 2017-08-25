@@ -19,7 +19,7 @@ def main():
     # we're only focusing on the binary task
     assert len(objects) == 1
 
-    print 'Preparing data....'
+    print ('Preparing data....')
     data, nb_classes = noscope.DataUtils.get_data(
             args.csv_in, args.video_in,
             binary=True,
@@ -29,7 +29,7 @@ def main():
             resol=(50, 50))
     X_train, Y_train, X_test, Y_test = data
 
-    print 'Trying VGG16....'
+    print ('Trying VGG16....')
     # CIFAR10 based architectures
     noscope.Models.try_params(
             noscope.Models.generate_vgg16,

@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import confusion_matrix
 
 def get_frames(video_fname, num_frames, frame_interval, scale):
-    print 'Retrieving %d frames from %s' % (num_frames, video_fname)
+    print ('Retrieving %d frames from %s' % (num_frames, video_fname))
     return VideoUtils.get_all_frames(num_frames, video_fname, frame_interval, scale=scale)
 
 def get_features(frames):
@@ -52,7 +52,7 @@ def get_model(model_type, X_train, Y_train, class_weights):
         model = svm.fit(X_train, Y_train)
     else:
         import sys
-        print 'Invalid model type: %s' % model_type
+        print ('Invalid model type: %s' % model_type)
         sys.exit(1)
     return model
 
@@ -82,9 +82,9 @@ def main():
     csv_out = args.csv_out
     if args.frame_interval <= 0:
         import sys
-        print '--frame_interval must be greater than 0'
+        print ('--frame_interval must be greater than 0')
         sys.exit(1)
-    print args
+    print (args)
     models_to_try = args.models.strip().split(',')
     args_dict = args.__dict__
     del(args_dict['models'])
@@ -92,34 +92,34 @@ def main():
     init_header, init_row = zip(*sorted(list(args_dict.iteritems())))
     init_header, init_row = list(init_header), list(init_row)
 
-    print 'Retrieving %d frames from %s' % (args.num_frames, args.video_in)
+    print ('Retrieving %d frames from %s' % (args.num_frames, args.video_in))
     video_frames = VideoUtils.get_all_frames(args.num_frames, args.video_in, scale=args.scale,
             interval=args.frame_interval)
 
-    print 'Retrieving %d labels from %s' % (args.num_frames, args.csv_in)
+    print ('Retrieving %d labels from %s' % (args.num_frames, args.csv_in))
     Y = DataUtils.get_binary(args.csv_in, [args.object], limit=args.num_frames, interval=args.frame_interval)
     Y = Y.flatten()
 
     if args.sample_data:
-        print 'Partitioning training and test sets using random sampling'
+        print ('Partitioning training and test sets using random sampling')
         train_ind, test_ind, Y_train, Y_test = train_test_split(np.arange(len(Y)), Y, test_size=args.test_ratio)
     else:
-        print 'Partitioning training and test sets using simple strategy: first \
-        %0.2f are training, remaining %0.2f are test' % (1-args.test_ratio, args.test_ratio)
+        print ('Partitioning training and test sets using simple strategy: first \
+        %0.2f are training, remaining %0.2f are test' % (1-args.test_ratio, args.test_ratio))
         split_index = int(len(Y)*(1 - args.test_ratio))
         inds = np.arange(len(Y))
         train_ind, test_ind, Y_train, Y_test = inds[:split_index], inds[split_index:], Y[:split_index], Y[split_index:]
-    print '(train) positive examples: %d, total examples: %d' % \
+    print ('(train) positive examples: %d, total examples: %d' % \
         (np.count_nonzero(np_utils.probas_to_classes(Y_train)),
-         len(Y_train))
-    print '(test) positive examples: %d, total examples: %d' % \
+         len(Y_train)))
+    print ('(test) positive examples: %d, total examples: %d' % \
         (np.count_nonzero(np_utils.probas_to_classes(Y_test)),
-         len(Y_test))
+         len(Y_test)))
     class_weights = DataUtils.get_class_weights(Y_train, args.class_weight_factor)
-    print 'Class weights:', class_weights
+    print ('Class weights:', class_weights)
 
     rows = []
-    print 'Getting features....'
+    print ('Getting features....')
     X = get_features(video_frames)
     X_train, X_test = X[train_ind], X[test_ind]
     for model_type in models_to_try:
@@ -127,20 +127,20 @@ def main():
         row = init_row[:]
         headers.append('model')
         row.append(model_type)
-        print model_type
+        print (model_type)
         model = get_model(model_type, X_train, Y_train, class_weights)
-        print 'evaluating on training set'
+        print ('evaluating on training set')
         train_metrics = evaluate_model(model, X_train, Y_train)
         for key, val in train_metrics:
             headers.append('train ' + key)
             row.append(val)
-        print train_metrics
-        print 'evaluating on test set'
+        print (train_metrics)
+        print ('evaluating on test set')
         test_metrics =  evaluate_model(model, X_test, Y_test)
         for key, val in train_metrics:
             headers.append('test ' + key)
             row.append(val)
-        print test_metrics
+        print (test_metrics)
         rows.append(row)
     output_csv(csv_out, np.array(rows), np.array(headers))
 

@@ -25,7 +25,7 @@ def get_feature_and_dist_fns(feature_type):
         return (RawImage.compute_feature, RawImage.get_distance_fn, RawImage.DIST_METRICS)
     else:
         import sys
-        print 'Invalid feature type: %s' % feature_type
+        print ('Invalid feature type: %s' % feature_type)
         sys.exit(1)
 
 def evaluate_model(y_preds, y_true):
@@ -67,9 +67,9 @@ def main():
     csv_in = args.csv_in
     if args.frame_delay <= 0:
         import sys
-        print '--frame_delay must be greater than 0'
+        print ('--frame_delay must be greater than 0')
         sys.exit(1)
-    print args
+    print (args)
     features_to_try = args.features.strip().split(',')
     args_dict = args.__dict__
     del(args_dict['features'])
@@ -79,10 +79,10 @@ def main():
     init_header, init_row = zip(*sorted(list(args_dict.iteritems())))
     init_header, init_row = list(init_header), list(init_row)
 
-    print 'Retrieving %d frames from %s' % (args.num_frames, video_in)
+    print ('Retrieving %d frames from %s' % (args.num_frames, video_in))
     video_frames = VideoUtils.get_all_frames(args.num_frames, video_in, scale=args.scale, interval=1)
 
-    print 'Retrieving %d labels from %s' % (args.num_frames, csv_in)
+    print ('Retrieving %d labels from %s' % (args.num_frames, csv_in))
     Y_truth = DataUtils.get_differences(csv_in, args.object, limit=args.num_frames, interval=1, delay=args.frame_delay)
 
     header = init_header + ['feature', 'distance metric', 'threshold', 'filtration', 'true positive ratio']
@@ -90,14 +90,14 @@ def main():
     for feature_type in features_to_try:
         row_with_feat = init_row[:]
         row_with_feat.append(feature_type)
-        print feature_type
+        print (feature_type)
         feature_fn, get_distance_fn, dist_metrics_to_try = get_feature_and_dist_fns(feature_type)
         features = get_features(feature_fn, video_frames)
         for dist_metric in dist_metrics_to_try:
             recorder = StatsUtils.OutputRecorder('%s_%s_%s.csv' % (csv_out_base, feature_type, dist_metric))
             row = row_with_feat[:]
             row.append(dist_metric)
-            print dist_metric
+            print (dist_metric)
             dists = get_distances(get_distance_fn(dist_metric), features, args.frame_delay)
             prev_thresh = None
             prev_metrics = None
@@ -120,7 +120,7 @@ def main():
                     'true positive ratio': 0.0
                 }
 
-            print prev_thresh, prev_metrics['filtration'], prev_metrics['true positive ratio']
+            print (prev_thresh, prev_metrics['filtration'], prev_metrics['true positive ratio'])
             _row = row[:]
             _row.append(prev_thresh)
             for key in ['filtration', 'true positive ratio']:

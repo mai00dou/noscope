@@ -28,7 +28,7 @@ def time_labeling(vid_fname, csv_fname, yolo_dir='.', start_from=0):
     begin = time.time()
     labels = map(lambda frame: YOLO_labeler.label_frame(frame), all_frames)
     end = time.time()
-    print 'time to label: %f' % (end - begin)
+    print ('time to label: %f' % (end - begin))
 
 
 def label_video(vid_fname, csv_fname, yolo_dir='.', start_from=0):
@@ -57,11 +57,11 @@ def label_video(vid_fname, csv_fname, yolo_dir='.', start_from=0):
             writer.writerow([count, detections])
 
             if count % 500 == 0:
-                print count, detections
+                print (count, detections)
                 csv_file.flush()
 
-    print 'finished processing', count, 'frames'
-    print 'time: ' + str(time.time() - begin)
+    print ('finished processing', count, 'frames')
+    print ('time: ' + str(time.time() - begin))
 
 
 def main():

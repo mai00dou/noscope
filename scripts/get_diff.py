@@ -24,7 +24,7 @@ def main():
     # we're only focusing on the binary task
     assert len(objects) == 1
 
-    print 'Preparing data....'
+    print ('Preparing data....')
     data, nb_classes = noscope.DataUtils.get_data(
             args.csv_in, args.video_in,
             binary=True,
@@ -39,11 +39,11 @@ def main():
         Y_test = np.transpose(np.array([1 - Y_test, Y_test]))
     predicted_labels = np_utils.probas_to_classes(proba)
     true_labels = np_utils.probas_to_classes(Y_test)
-    print sklearn.metrics.accuracy_score(predicted_labels, true_labels)
+    print (sklearn.metrics.accuracy_score(predicted_labels, true_labels))
 
 
-    print true_labels.shape
-    print predicted_labels.shape
+    print (true_labels.shape)
+    print (predicted_labels.shape)
     with open(args.csv_out, 'wb') as csv_file:
         writer = csv.writer(csv_file)
         writer.writerow(['frame', 'yolo_label', 'small_cnn_label'])
