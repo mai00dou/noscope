@@ -2,8 +2,9 @@
 
 This is a fork from the offical Noscope. We added a few notes about the issues we had during the install and solutions. Please refer to the official Noscope [github](https://github.com/stanford-futuredata/noscope), [blog post](http://dawn.cs.stanford.edu/2017/06/22/noscope/) and [paper](https://arxiv.org/abs/1703.02529)  for mroe details 
 
+Please read Update section for the latest update
 
-# Requirements
+## Requirements
 
 This repository contains the code for the optimization step in the paper. The inference code is
 [here](https://github.com/stanford-futuredata/tensorflow-noscope/tree/speedhax).
@@ -21,7 +22,7 @@ Your machine will need at least:
 - A GPU (this has only been tested with NVIDIA K80 and P100)
 
 
-# Setting up the inference engine
+## Setting up the inference engine
 
 1. To set up the inference engine, do the following:
 ```
@@ -90,7 +91,7 @@ bazel build -c opt --copt=-mavx2 --config=cuda noscope
 ```
 
 
-# Running the example
+## Running the example
 
 Once you have inference engine set up, the `example/` subfolder contains the script to reproduce
 Figure 5d in the paper.
@@ -156,5 +157,11 @@ pip install sk-video
 ```
 ./run.sh
 ```
+
+
+## Update
+25/08/2017 - We updated the GPU which it support AVX2. However we do not have enough memory to get it working. From my observation it stopped when it tries to build a YOLO weight file. The requirement of this program is inreasonable (it requires 300GB RAM). We decide not to upgrade the memory.
+
+
 
 
