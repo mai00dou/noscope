@@ -109,7 +109,7 @@ wget https://storage.googleapis.com/noscope-data/videos/jackson-town-square.mp4
 
 
 2. If the example video is too large, I have written a mini video-cutter under the main folder. The program will look for the video unders the data folder and save the new video in the same folder. My file structure as below
-
+```
 noscope
     |--data
     |   |-cnn-avg
@@ -120,6 +120,8 @@ noscope
     |   |-videos
     |--main
     |--tensorflow-noscope
+```
+
 
 Usage:
 ```
